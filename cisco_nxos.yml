@@ -3,28 +3,29 @@
   "Destination filename": ""
   "Destination file": ""
   "Do you want to overwrite": "y"
-  "Overwrite": "y"
-  "password:": "{password}"
+  "verwrite": "y"
+
 verify:
   - command: "show file {dst_file} md5sum"
     prompts:
-      "{md5}": true
+      '{md5}':
+        exc: TransferOK
+
 transfers:
-  tftp:
-    - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
-      prompts:
-        <<: *prompts
   scp:
     - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
+      kwargs:
+        read_timeout: 120
+        last_read: 10
       prompts:
         <<: *prompts
         "Are you sure you want to continue": "yes"
         "Enter username": "{username}"
-        "Password": "{password}"
-        "password": "{password}"
-      kwargs:
-        read_timeout: 120
-        last_read: 10
+        assword:
+          command: "{password}"
+          kwargs:
+             read_timeout: 1800
+             last_read: 10
 errors:
   kibbitzer.exceptions.FileTransferError:
     - No such file or directory
