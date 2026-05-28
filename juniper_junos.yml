@@ -1,0 +1,51 @@
+.transfer-prompts: &prompts
+  "Are you sure you want to continue connecting": "yes"
+  "Password": "{password}"
+  "password": "{password}"
+  "overwrite": "yes"
+  "Overwrite": "yes"
+
+verify:
+  - command: "file checksum md5 {dst_file}"
+    prompts:
+      "{md5}": true
+
+transfers:
+  scp:
+    - command: "file copy scp://{username}@{src_ip}/{src_file} {dst_file}"
+      prompts:
+        <<: *prompts
+      kwargs:
+        read_timeout: 180
+        last_read: 10
+
+  tftp:
+    - command: "file copy tftp://{src_ip}/{src_file} {dst_file}"
+      prompts:
+        <<: *prompts
+      kwargs:
+        read_timeout: 120
+        last_read: 10
+
+errors:
+  kibbitzer.exceptions.FileTransferError:
+    - No such file or directory
+    - No such file
+    - not found
+    - Permission denied
+    - permission denied
+    - Connection refused
+    - No route to host
+    - timed out
+    - Timed out
+    - Transfer failed
+    - transfer failed
+    - Copy failed
+    - copy failed
+    - checksum does not match
+    - digest does not match
+
+  kibbitzer.exceptions.InvalidCommand:
+    - "^error: (.*)"
+    - "^syntax error(.*)"
+    - "^unknown command(.*)"
