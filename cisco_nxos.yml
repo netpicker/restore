@@ -4,6 +4,7 @@
   "Destination file": ""
   "Do you want to overwrite": "y"
   "Overwrite": "y"
+  "password:": "{password}"
 verify:
   - command: "show file {dst_file} md5sum"
     prompts:
