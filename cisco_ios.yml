@@ -8,18 +8,20 @@ verify:
       '= {md5}': true
 
 transfers:
-  tftp:
-    - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
-      prompts:
-        <<: *prompts
-
   scp:
     - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
       prompts:
         <<: *prompts
+        assword:
+          command: "{password}"
       kwargs:
         read_timeout: 120
         last_read: 10
+
+  tftp:
+    - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
+      prompts:
+        <<: *prompts
 
 errors:
   kibbitzer.exceptions.FileTransferError:
