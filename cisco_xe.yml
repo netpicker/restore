@@ -12,6 +12,8 @@ transfers:
     - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
       prompts:
         <<: *prompts
+        assword:
+          command: "{password}"
 
   scp:
     - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
