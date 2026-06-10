@@ -1,31 +1,42 @@
+```yaml
 .transfer-prompts: &prompts
   "Enter vrf": ""
   "Destination filename": ""
   "Destination file": ""
   "Do you want to overwrite": "y"
+  "Do you want to over\\s?write": "y"
   "verwrite": "y"
 
 verify:
   - command: "show file {dst_file} md5sum"
+    method: send_command
+    expect_string: '([0-9a-fA-F]{32})'
+    kwargs:
+      read_timeout: 300
     prompts:
       '{md5}':
         exc: TransferOK
+      'No such file':
+        msg: 'file not found after transfer'
+      'File not found':
+        msg: 'file not found after transfer'
+      '% Invalid':
+        msg: 'md5 verify command failed'
 
 transfers:
   scp:
     - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
+      method: send_command_timing
       kwargs:
-        read_timeout: 120
-        last_read: 10
+        read_timeout: 1800
+        last_read: 20
       prompts:
         <<: *prompts
         "Are you sure you want to continue": "yes"
         "Enter username": "{username}"
         assword:
           command: "{password}"
-          kwargs:
-             read_timeout: 1800
-             last_read: 10
+
 errors:
   kibbitzer.exceptions.FileTransferError:
     - No such file or directory
@@ -38,6 +49,8 @@ errors:
     - No route to host
     - Connection refused
     - Timed out
+
   kibbitzer.exceptions.InvalidCommand:
     - "^% (.*)"
     - "^ERROR: (.*)"
+```
