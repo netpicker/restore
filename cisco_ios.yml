@@ -1,27 +1,46 @@
 .transfer-prompts: &prompts
   "Destination file": ""
+  "Destination filename": ""
   "file already existing": ""
+  "Do you want to overwrite": "n"
+  "Do you want to over\\s?write": "n"
 
 verify:
   - command: "verify /md5 {dst_file}"
+    method: send_command
+    expect_string: "([0-9a-fA-F]{32})"
+    kwargs:
+      read_timeout: 300
     prompts:
-      '= {md5}': true
+      '= {md5}':
+        exc: TransferOK
+      '{md5}':
+        exc: TransferOK
+      'Invalid input':
+        msg: 'md5 verify command failed'
+      'No such file':
+        msg: 'file not found after transfer'
 
 transfers:
   scp:
     - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
+      method: send_command_timing
       prompts:
         <<: *prompts
         assword:
           command: "{password}"
       kwargs:
-        read_timeout: 120
-        last_read: 10
+        read_timeout: 1800
+        last_read: 60
 
   tftp:
     - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
+      method: send_command_timing
       prompts:
         <<: *prompts
+      kwargs:
+        read_timeout: 1800
+        last_read: 60
 
 errors:
   kibbitzer.exceptions.FileTransferError:
