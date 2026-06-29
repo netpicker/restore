@@ -2,8 +2,8 @@
   "Destination file": ""
   "Destination filename": ""
   "file already existing": ""
-  "Do you want to overwrite": "n"
-  "Do you want to over\\s?write": "n"
+  "Do you want to overwrite": ""
+  "Do you want to over\\s?write": ""
 
 verify:
   - command: "verify /md5 {dst_file}"
