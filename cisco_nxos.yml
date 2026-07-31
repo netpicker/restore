@@ -1,37 +1,50 @@
 .transfer-prompts: &prompts
-  "Enter vrf": ""
-  "Destination filename": ""
-  "Destination file": ""
-  "Do you want to overwrite": "y"
-  "verwrite": "y"
+  "Enter vrf":
+    command: "{device.properties.vrf_mgmt}"
+    kwargs:
+      last_read: 5
+  "Destination file":
+    command: ""
+    kwargs:
+      last_read: 5
+  "verwrite":
+    command: "y"
+    kwargs:
+      last_read: 5
 
 verify:
   - command: "show file {dst_file} md5sum"
+    method: send_command
+    kwargs:
+      read_timeout: 30
     prompts:
       '{md5}':
         exc: TransferOK
 
 transfers:
   scp:
-    - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
-      kwargs:
-        read_timeout: 120
-        last_read: 10
+    - command: "copy scp://{username}@{src_ip}/{src_file} {dst_file}"
       prompts:
         <<: *prompts
-        "Are you sure you want to continue": "yes"
-        "Enter username": "{username}"
+        "re you sure you want to continue": "yes"
+        "nter username": "{username}"
         assword:
           command: "{password}"
+          method: send_command_progressing
           kwargs:
-             read_timeout: 1800
-             last_read: 10
+             expect_string: 'opy complete'
+             error_string: 'opy fail'
+             #progress_patterns:
+             #  percent: (?P<percent>\d+)%
+             #  eta: "ETA[: ]+(?P<eta>\\S+)"
+
 errors:
   kibbitzer.exceptions.FileTransferError:
     - No such file or directory
     - Error opening
     - Transfer failed
     - Permission denied
+    - No space left on
     - "% File not found"
     - "% Invalid"
     - Copy failed
