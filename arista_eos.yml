@@ -23,7 +23,7 @@ verify:
 
 transfers:
   scp:
-    - command: "copy scp://{username}@{src_ip}/{src_file} {dst_file}"
+    - command: "copy scp://{username}@{src_ip}/{src_file} vrf management {dst_file}"
       prompts:
         <<: *prompts
         "re you sure you want to continue": "yes"
@@ -32,8 +32,9 @@ transfers:
           command: "{password}"
           method: send_command_progressing
           kwargs:
-             expect_string: 'opy complete'
-             error_string: 'opy fail'
+             expect_string: '#'
+             error_string: 'opy fail|Copy failed|Transfer failed|Permission denied|No such file|Error'
+             heartbeat_timeout: 360
              #progress_patterns:
              #  percent: (?P<percent>\d+)%
              #  eta: "ETA[: ]+(?P<eta>\\S+)"
@@ -43,6 +44,7 @@ errors:
     - No such file or directory
     - Error opening
     - Transfer failed
+    - No space left on
     - Permission denied
     - "% File not found"
     - "% Invalid"
@@ -53,3 +55,4 @@ errors:
   kibbitzer.exceptions.InvalidCommand:
     - "^% (.*)"
     - "^ERROR: (.*)"
+
