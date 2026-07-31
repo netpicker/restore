@@ -7,31 +7,33 @@
 
 verify:
   - command: "verify /md5 {dst_file}"
-    method: send_command
-    expect_string: "([0-9a-fA-F]{32})"
-    kwargs:
-      read_timeout: 300
     prompts:
       '= {md5}':
         exc: TransferOK
-      '{md5}':
-        exc: TransferOK
-      'Invalid input':
-        msg: 'md5 verify command failed'
-      'No such file':
-        msg: 'file not found after transfer'
+      .:
+        msg: 'digest does not match'
 
 transfers:
   scp:
-    - command: "copy scp://{username}:{password}@{src_ip}/{src_file} {dst_file}"
-      method: send_command_timing
+    - command: "copy scp://{username}@{src_ip}/{src_file} {dst_file}"
       prompts:
-        <<: *prompts
+        "stination file": 
+          command: ""
+          method: send_command
+          kwargs:
+            expect_string: "assword|over wr"
+        "over wr": 
+          command: ""
+          method: send_command
+          kwargs:
+            expect_string: "assword"
         assword:
           command: "{password}"
-      kwargs:
-        read_timeout: 1800
-        last_read: 60
+          method: send_command_progressing
+          kwargs:
+            heartbeat_timeout: 300
+            expect_string: 'bytes copied'
+            error_string: 'fail'
 
   tftp:
     - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
