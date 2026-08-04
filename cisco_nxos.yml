@@ -16,7 +16,7 @@ verify:
   - command: "show file {dst_file} md5sum"
     method: send_command
     kwargs:
-      read_timeout: 30
+      read_timeout: 60
     prompts:
       '{md5}':
         exc: TransferOK
