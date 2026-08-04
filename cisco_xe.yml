@@ -7,6 +7,8 @@
 
 verify:
   - command: "verify /md5 {dst_file}"
+    kwargs:
+      read_timeout: 60  
     prompts:
       '= {md5}':
         exc: TransferOK
