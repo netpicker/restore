@@ -1,0 +1,44 @@
+verify:
+  - command: "file cfg"
+    kwargs:
+      expect_string: '#>'
+  - command: "dir"
+    kwargs:
+      expect_string: '#>'
+      read_timeout: 60
+    prompts:
+      '{md5}':
+        exc: TransferOK
+      .:
+        msg: 'digest does not match'
+
+transfers:
+  scp:
+    - command: "file cfg"
+      kwargs:
+        expect_string: '#>'
+    - command: "import proto scp user {username} password {password} {src_ip} {src_file} {dst_file}"
+      kwargs:
+        expect_string: '#>|continue connecting'
+        read_timeout: 300
+      prompts:
+        "continue connecting":
+          command: "yes"
+          method: send_command
+          kwargs:
+            expect_string: '#>'
+            read_timeout: 300
+    - command: "end"
+      kwargs:
+        expect_string: '#>'
+
+errors:
+  kibbitzer.exceptions.FileTransferError:
+    - Invalid parameter
+    - No destination file name given
+    - Failed using SCP
+    - Failed encrypting password
+    - closed by remote host
+    - Permission denied
+  kibbitzer.exceptions.InvalidCommand:
+    - "not found\\.\\s+Try issuing 'help'"
