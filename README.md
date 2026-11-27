@@ -16,7 +16,6 @@ Restore YAML files tell Kibbitzer how to copy a file **to** a network device and
 8. [Errors](#8-errors)
 9. [Creating or changing a definition](#9-creating-or-changing-a-definition)
 10. [Troubleshooting](#10-troubleshooting)
-11. [Open questions](#11-open-questions)
 
 **Required / Optional** in the tables below reflects how the shipped files are built. Parser-enforced rules have not been confirmed yet (see [§11](#11-open-questions)).
 
