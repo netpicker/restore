@@ -287,17 +287,3 @@ Keep existing patterns and add new ones only from output you have actually seen.
 | Arista fails on VRF | EOS hardcodes `vrf management` |
 | YAML changes have no effect | Gitd repository revision vs. the definition actually in use; duplicate config sources |
 | Transfer seems slow | Copy time vs. total job time, including backup and compliance steps. Skip those for jobs that don't change configuration |
-
-**Logs:** set `JOB_EXEC_LOG_LEVEL: AUDIT` in the Netpicker Compose configuration and read the job output with the Agent/Kibbitzer logs. Redact credentials before sharing, especially for Westermo, which puts `{password}` in the command line.
-
-## 11. Open questions
-
-These can't be confirmed from the YAML files and need confirmation from the Kibbitzer maintainers:
-
-| Question | Why it matters |
-| --- | --- |
-| How is a protocol chosen? Is there a fallback order? | Explains unexpected TFTP attempts |
-| Which pattern wins when several prompt keys match? | IOS/XE verify and XR prompts depend on it |
-| What is the default `method`? | XR and Junos set none but use `last_read` |
-| Which fields does the parser require? Are `.`-prefixed keys ignored? | Firms up the Required/Optional labels |
-| How does a pushed change reach the running instance? | Avoids "changes have no effect" |
