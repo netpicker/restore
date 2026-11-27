@@ -63,29 +63,28 @@ Each item under `transfers.<protocol>` or `verify` is a command entry. Entries i
 | `kwargs` | Optional | Settings for the method, such as timeouts and patterns |
 | `prompts` | Conditional: needed when the device asks a question | Output pattern → response |
 
-**Multi-step example** (`westermo_os.yml`):
+**Example** (`cisco_ios.yml`, TFTP) uses all four parameters:
 
 ```yaml
+.transfer-prompts: &prompts
+  "Destination file": ""
+  "Destination filename": ""
+  "file already existing": ""
+  "Do you want to overwrite": ""
+  "Do you want to over\\s?write": ""
+
 transfers:
-  scp:
-    - command: "file cfg"
-      kwargs:
-        expect_string: '#>'
-    - command: "import proto scp user {username} password {password} {src_ip} {src_file} {dst_file}"
-      kwargs:
-        expect_string: '#>|continue connecting'
-        read_timeout: 300
+  tftp:
+    - command: "copy tftp://{src_ip}/{src_file} {dst_file}"
+      method: send_command_timing
       prompts:
-        "continue connecting":
-          command: "yes"
-          method: send_command
-          kwargs:
-            expect_string: '#>'
-            read_timeout: 300
-    - command: "end"
+        <<: *prompts
       kwargs:
-        expect_string: '#>'
+        read_timeout: 1800
+        last_read: 60
 ```
+
+> **Multiple commands:** when a platform needs several steps, list them one after another. `westermo_os.yml` is the repository example: it runs `file cfg`, then the `import proto scp …` command, then `end`.
 
 ## 4. Prompts
 
@@ -169,7 +168,7 @@ All optional. Times are in seconds.
 | `last_read` | `send_command_timing` | Quiet time before reading stops | `60` (IOS/XE TFTP) |
 | `heartbeat_timeout` | `send_command_progressing` | Longest gap with no progress | `300` (IOS/XE), `360` (EOS) |
 
-**IOS XE SCP flow** (`cisco_xe.yml`): waits for the password or overwrite prompt, then runs the copy as a progressing command.
+**IOS SCP flow** (`cisco_ios.yml`, identical in `cisco_xe.yml`): waits for the password or overwrite prompt, then runs the copy as a progressing command.
 
 ```yaml
 transfers:
@@ -229,7 +228,7 @@ transfers:
 | IOS XR, Junos | `"{md5}": true` | Listed under `errors` (`digest does not match`) |
 | Westermo | `'{md5}'` in `dir` output → `exc: TransferOK` | `.` → `msg: digest does not match` |
 
-Example (`cisco_xe.yml`):
+Example (`cisco_ios.yml`):
 
 ```yaml
 verify:
@@ -288,3 +287,17 @@ Keep existing patterns and add new ones only from output you have actually seen.
 | Arista fails on VRF | EOS hardcodes `vrf management` |
 | YAML changes have no effect | Gitd repository revision vs. the definition actually in use; duplicate config sources |
 | Transfer seems slow | Copy time vs. total job time, including backup and compliance steps. Skip those for jobs that don't change configuration |
+
+**Logs:** set `JOB_EXEC_LOG_LEVEL: AUDIT` in the Netpicker Compose configuration and read the job output with the Agent/Kibbitzer logs. Redact credentials before sharing, especially for Westermo, which puts `{password}` in the command line.
+
+## 11. Open questions
+
+These can't be confirmed from the YAML files and need confirmation from the Kibbitzer maintainers:
+
+| Question | Why it matters |
+| --- | --- |
+| How is a protocol chosen? Is there a fallback order? | Explains unexpected TFTP attempts |
+| Which pattern wins when several prompt keys match? | IOS/XE verify and XR prompts depend on it |
+| What is the default `method`? | XR and Junos set none but use `last_read` |
+| Which fields does the parser require? Are `.`-prefixed keys ignored? | Firms up the Required/Optional labels |
+| How does a pushed change reach the running instance? | Avoids "changes have no effect" |
